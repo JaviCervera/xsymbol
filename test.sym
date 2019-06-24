@@ -1,0 +1,47 @@
+@main args
+  print "Hello from XSymbol!"
+  
+  print "Input arguments:"
+  print args
+  
+  print "Comparison of 6 and 5"
+  ? <= 6 5
+    print "6 is smaller or equal to 5"
+  :
+    print "6 is greater than 5"
+  ;
+
+  print "Print a list:"
+  print (-56 "Hello" (36 28) 48.7)
+  
+  print "Factorial of 5 is:"
+  print factorial 5
+  
+  print "(5 6 7) car is:"
+  print car (5 6 7)
+  
+  print "(5 6 7) cdr is:"
+  print cdr (5 6 7)
+  
+  print "Absolute value of -5 is:"
+  print abs -5
+  
+  print "Concatenation of values to a list:"
+  print cat((5 2 10) (36 (78 "How are you")))
+;
+
+@factorial x
+  ? <= x 1
+    1
+  :
+    * x factorial - x 1
+  ;
+;
+
+@abs x
+  ? < x 0
+    -x
+  :
+    x
+  ;
+;
