@@ -5,10 +5,9 @@
   print args
   
   print "Comparison of 6 and 5"
-  ? <= 6 5
-    print "6 is smaller or equal to 5"
-  :
-    print "6 is greater than 5"
+  6 <= 5
+    ? print "6 is smaller or equal to 5"
+    : print "6 is greater than 5"
   ;
 
   print "Print a list:"
@@ -31,17 +30,15 @@
 ;
 
 @factorial x
-  ? <= x 1
-    1
-  :
-    * x factorial - x 1
+  x <= 1
+    ? 1
+    : * x factorial - x 1
   ;
 ;
 
 @abs x
-  ? < x 0
-    -x
-  :
-    x
+  x < 0
+    ? -x
+    : x
   ;
 ;

@@ -229,8 +229,7 @@ Type XSymbolContext
 		'Seek function
 		_SeekFunction(func$)
 		
-		'If param is a nominal list, ensure we received the correct
-		'number of parameters
+		'If param is a nominal list, ensure we received the correct number of parameters
 		If pname.length = 0
 			If parm.type_ <> XSymbolValue.TYPE_LIST Then Error("An empty list is expected as parameter", line)
 			If parm.list.fields.length <> 0 Then Error("An empty list is expected as parameter", line)
@@ -255,6 +254,74 @@ Type XSymbolContext
 	
 	
 	Method _ParseExpression:XSymbolValue()
+		Return _ParseOrExp()
+	End Method
+
+	
+	'$andexp *[or $andexp]
+	'expanded from [$orexp or] $andexp
+	Method _ParseOrExp:XSymbolValue()
+		'$andexp
+		Local ret:XSymbolValue = _ParseAndExp()
+		
+		'*[or $andexp]
+		Local tok$ = _GetToken()
+		While tok = "|"
+			If ret.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot compare non-numeric values", line)
+			
+			Local otherExp:XSymbolValue = _ParseAndExp()
+			If otherExp.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot compare non-numeric values", line)
+			ret = XSymbolValue.CreateNumber(ret.number Or otherExp.number)
+			
+			tok = _GetToken()
+		Wend
+		_GoBack()
+		
+		Return ret
+	End Method
+	
+	
+	'$equalexp *[and $equalexp]
+	'expanded from [$andexp and] $equalexp
+	Method _ParseAndExp:Void(Type:Int)
+		'$equalexp
+		Local ret:XSymbolValue = _ParseEqualExp()
+		
+		'*[and $equalexp]
+		Local tok$ = _GetToken()
+		While tok = "&"
+			If ret.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot compare non-numeric values", line)
+			
+			Local otherExp:XSymbolValue = _ParseEqualExp()
+			If otherExp.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot compare non-numeric values", line)
+			ret = XSymbolValue.CreateNumber(ret.number And otherExp.number)
+			
+			tok = _GetToken()
+		Wend
+		_GoBack()
+	End Method
+	
+
+	'$relexp *[equal | notequal $relexp]
+	'expanded from ([$equalexp equal] $relexp) | ([$equalexp notequal] $relexp)
+	Method ParseEqualExp:Void(Type:Int)
+		'$relexp 
+		Local ret:XSymbolValue = _ParseRelExp()
+		
+		'*[equal | notequal $relexp]
+		Local tok$ = _GetToken()
+		While tok = "=" Or tok = "!="
+			Local op$ = tok
+			Local otherExp:XSymbolValue = _ParseEqualExp()
+			'******
+			'ret = XSymbolValue.CreateNumber(ret.number And otherExp.number)
+			tok = _GetToken()
+		Wend
+		_GoBack()
+	End Method
+	
+	
+	Method _OldParseExpression:XSymbolValue()
 		Local tok$ = _GetToken()
 		
 		'Number

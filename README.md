@@ -140,7 +140,7 @@ Indicates whether the given number is zero.
 In order to learn the language syntax, you can run the file "test.sym". Other examples are provided here:
 
 ```
-' Adds all the elements in a list (they must be numbers)
+'Adds all the elements in a list (they must be numbers)
 @add x
   ? null x
     0
@@ -151,8 +151,8 @@ In order to learn the language syntax, you can run the file "test.sym". Other ex
 ```
 
 ```
-' Counts the number of elements in a list
-@ count x
+'Counts the number of elements in a list
+@count x
   ? null x
     0
   :
