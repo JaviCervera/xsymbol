@@ -283,7 +283,7 @@ Type XSymbolContext
 	
 	'$equalexp *[and $equalexp]
 	'expanded from [$andexp and] $equalexp
-	Method _ParseAndExp:Void(Type:Int)
+	Method _ParseAndExp:XSymbolValue()
 		'$equalexp
 		Local ret:XSymbolValue = _ParseEqualExp()
 		
@@ -299,25 +299,120 @@ Type XSymbolContext
 			tok = _GetToken()
 		Wend
 		_GoBack()
+		
+		Return ret
 	End Method
 	
 
 	'$relexp *[equal | notequal $relexp]
 	'expanded from ([$equalexp equal] $relexp) | ([$equalexp notequal] $relexp)
-	Method ParseEqualExp:Void(Type:Int)
+	Method _ParseEqualExp:XSymbolValue()
 		'$relexp 
 		Local ret:XSymbolValue = _ParseRelExp()
 		
 		'*[equal | notequal $relexp]
 		Local tok$ = _GetToken()
 		While tok = "=" Or tok = "!="
-			Local op$ = tok
-			Local otherExp:XSymbolValue = _ParseEqualExp()
-			'******
-			'ret = XSymbolValue.CreateNumber(ret.number And otherExp.number)
+			Local otherExp:XSymbolValue = _ParseRelExp()
+			If tok = "="
+				ret = XSymbolValue.CreateNumber(Not (ret.number <> otherExp.number))
+			Else
+				ret = XSymbolValue.CreateNumber(ret.number <> otherExp.number)
+			End If
 			tok = _GetToken()
 		Wend
 		_GoBack()
+		
+		Return ret
+	End Method
+	
+
+	'$addexp *[lesser | lequal | greater | gequal $addexp]
+	'expanded from ([$relexp lesser] $addexp) | ([$relexp lequal] $addexp) | ([$relexp greater] $addexp) | ([$relexp gequal] $addexp)
+	Method _ParseRelExp:XSymbolValue()
+		'$addexp
+		Local ret:XSymbolValue = _ParseAddExp()
+		
+		'*[lesser | lequal | greater | gequal $addexp]
+		Local tok$ = _GetToken()
+		While tok = "<" Or tok = "<=" Or tok = ">" Or tok = ">="
+			If ret.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot compare non-numeric values", line)
+			
+			Local otherExp:XSymbolValue = _ParseAddExp()
+			If otherExp.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot compare non-numeric values", line)
+			If tok = "<"
+				ret = XSymbolValue.CreateNumber(ret.number < otherExp.number)
+			Else If tok = "<="
+				ret = XSymbolValue.CreateNumber(ret.number <= otherExp.number)
+			Else If tok = ">"
+				ret = XSymbolValue.CreateNumber(ret.number > otherExp.number)
+			Else If tok = ">="
+				ret = XSymbolValue.CreateNumber(ret.number >= otherExp.number)
+			End If
+			tok = _GetToken()
+		Wend
+		_GoBack()
+		
+		Return ret
+	End Method
+	
+	
+	'$mulexp *[plus | minus $mulexp]
+	'expanded from ([$addexp plus] $mulexp) | ([$addexp minus] $mulexp)
+	Method _ParseAddExp:XSymbolValue()
+		'$mulexp
+		Local ret:XSymbolValue = _ParseMulExp()
+		
+		'*[plus | minus $mulexp]
+		Local tok$ = _GetToken()
+		While tok = "+" Or tok = "-"
+			If tok = "+"
+				If ret.type_ <> XSymbolValue.TYPE_NUMBER And ret.type_ <> XSymbolValue.TYPE_STRING Then Error("Cannot add values", line)
+			Else
+				If ret.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot subtract non-numeric values", line)
+			End If
+			
+			Local otherExp:XSymbolValue = _ParseMulExp()
+			If tok = "+"
+				If otherExp.type_ <> XSymbolValue.TYPE_NUMBER And otherExp.type_ <> XSymbolValue.TYPE_STRING Then Error("Cannot add values", line)
+			Else
+				If otherExp.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot subtract non-numeric values", line)
+			End If
+			If tok = "+"
+				If ret.type_ = XSymbolValue.TYPE_NUMBER And otherExp.type_ = XSymbolValue.TYPE_NUMBER
+					ret = XSymbolValue.CreateNumber(ret.number + otherExp.number)
+				Else
+					Local a:String
+					Local b:String
+					If ret.type_ = XSymbolValue.TYPE_STRING
+						a = ret.str
+					Else
+						a = String.FromInt(ret.number)
+					End If
+					If otherExp.type_ = XSymbolValue.TYPE_STRING
+						b = otherExp.str
+					Else
+						b = String.FromInt(otherExp.number)
+					End If
+
+					ret = XSymbolValue.CreateString(a + b)
+				End If
+			Else
+				ret = XSymbolValue.CreateNumber(ret.number - otherExp.number)
+			End If
+			tok = _GetToken()
+		Wend
+		_GoBack()
+		
+		Return ret
+
+	End Method
+	
+	
+	'$unaryexp *[mul | div | mod $unaryexp]
+	'expanded from ([$mulexp mul] $unaryexp) | ([$mulexp div] $unaryexp) | [$mulexp mod] $unaryexp)
+	Method _ParseMulExp:XSymbolValue()
+	
 	End Method
 	
 	
