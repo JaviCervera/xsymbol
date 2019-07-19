@@ -405,14 +405,35 @@ Type XSymbolContext
 		_GoBack()
 		
 		Return ret
-
 	End Method
 	
 	
 	'$unaryexp *[mul | div | mod $unaryexp]
 	'expanded from ([$mulexp mul] $unaryexp) | ([$mulexp div] $unaryexp) | [$mulexp mod] $unaryexp)
 	Method _ParseMulExp:XSymbolValue()
-	
+		'$unaryexp
+		Local ret:XSymbolValue = _ParseUnaryExp()
+		
+		'*[mul | div | mod $unaryexp]
+		Local tok$ = _GetToken()
+		While tok = "*" Or tok = "/" Or tok = "%"
+			If ret.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot perform operation on non-numeric values", line)
+			
+			Local otherExp:XSymbolValue = _ParseMulExp()
+			If otherExp.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot perform operation on non-numeric values", line)
+			
+			If tok = "*"
+				ret = XSymbolValue.CreateNumber(ret.number * otherExp.number)
+			Else If tok = "/"
+				ret = XSymbolValue.CreateNumber(ret.number / otherExp.number)
+			Else
+				ret = XSymbolValue.CreateNumber(ret.number Mod otherExp.number)
+			End If
+			tok = _GetToken()
+		Wend
+		_GoBack()
+		
+		Return ret
 	End Method
 	
 	
@@ -450,7 +471,7 @@ Type XSymbolContext
 			Local arg1:XSymbolValue = _ParseExpression()
 			If arg1.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot substract non-numeric values", line)
 			Local arg2:XSymbolValue = _ParseExpression()
-			If arg2.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot substract non-numeric values", line)
+			If arg2.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot subtract non-numeric values", line)
 			Return XSymbolValue.CreateNumber(arg1.number - arg2.number)
 		End If
 		

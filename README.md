@@ -15,7 +15,7 @@ The optional arguments will be passed as a list to the `@main` function of the s
 Some words have a special meaning:
 
 * `id` indicates an identifier. Identifiers begin with a letter or an underscore, and are followed by any sequence of numbers, letters or underscores.
-* `exp` indicates an expression. All arithmetic operations are prefixed in XSymbol, so `2 + 2` is expressed as `+ 2 2`.
+* `exp` indicates an expression.
 * `prm` indicates a parameter, which have the same naming rules as any identifier. Functions in XSymbol have a single parameter. To support multiple parameters, pass a list with all the values as argument and handle them using [argument unpacking](#argument-unpacking).
 * Square brackets (`[]`) are used to indicate an optional construct.
 * Curly brackets (`{}`) are used to indicate a construct that can appear multiple times (at least once). Each repetition is separated with one or more whitespaces.
@@ -23,23 +23,23 @@ Some words have a special meaning:
 The syntax rules are quite simple and are briefly explained below:
 
 * `'`: Begins a single line comment.
-* `({exp})`: Creates a new list.
-* `+ exp exp`: Addition.
-* `- exp exp`: Subtration.
-* `* exp exp`: Multiplication.
-* `/ exp exp`: Division.
-* `% exp exp`: Division remainder.
-* `& exp exp`: Logic and.
-* `| exp exp`: Logic or.
+* `([{exp}])`: Creates a new list.
+* `exp + exp`: Addition.
+* `exp - exp`: Subtraction.
+* `exp * exp`: Multiplication.
+* `exp / exp`: Division.
+* `exp % exp`: Division remainder.
+* `exp & exp`: Logic and.
+* `exp | exp`: Logic or.
 * `! exp`: Logic not.
-* `= exp exp`: Equality comparison.
-* `< exp exp`: "Lesser than" comparison.
-* `> exp exp`: "Greater than" comparison.
-* `<= exp exp`: "Lesser or equal to" comparison.
-* `>= exp exp`: "Greater or equal to" comparison.
+* `exp = exp`: Equality comparison.
+* `exp < exp`: "Lesser than" comparison.
+* `exp > exp`: "Greater than" comparison.
+* `exp <= exp`: "Lesser or equal to" comparison.
+* `exp >= exp`: "Greater or equal to" comparison.
 * `id exp`: Calls the function named `id`, passing the expression value as argument.
 * `? exp {exp} : {exp};`: If the first expression evaluates to true, executes the second block of expressions; otherwise, runs the third block of expressions.
-* `@ id prm {exp};`: Defines a function named `id`.
+* `@ id prm {exp};`: When a top-level declaration, defines a function named `id`.
 
 ### Argument unpacking
 
@@ -145,7 +145,7 @@ In order to learn the language syntax, you can run the file "test.sym". Other ex
   ? null x
     0
   :
-    + car x  add cdr x
+    car x + add cdr x
   ;
 ;
 ```
@@ -165,6 +165,7 @@ In order to learn the language syntax, you can run the file "test.sym". Other ex
 
 * [ ] Parser with infix operators.
 * [ ] Use comma to separate values in list.
+* [ ] Add :? operator to not require to close all chained else ifs.
 * [ ] Add constants (only local by now?).
 * [ ] Add dictionaries created with {"key": value} syntax.
 * [ ] Add dot access syntactic sugar for dictionaries.
