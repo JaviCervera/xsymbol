@@ -160,3 +160,13 @@ In order to learn the language syntax, you can run the file "test.sym". Other ex
   ;
 ;
 ```
+
+## TODO v2.0
+
+* [ ] Parser with infix operators.
+* [ ] Use comma to separate values in list.
+* [ ] Add constants (only local by now?).
+* [ ] Add dictionaries created with {"key": value} syntax.
+* [ ] Add dot access syntactic sugar for dictionaries.
+* [ ] Add @id expression for function pointer.
+* [ ] Add new library with support for map, reduce, filter, merge...
