@@ -81,6 +81,76 @@ Type XSymbolValue
 				Return XSymbolValue.CreateList(Self.list.Copy(context))
 		End Select
 	End Method
+	
+	Method Compare_:Int(other:XSymbolValue, line:Int)
+		Select Self.type_
+			Case TYPE_NUMBER
+				Return other.CompareNumber(Self.number, line)
+			Case TYPE_STRING
+				Return other.CompareString(Self.str, line)
+			Case TYPE_LIST
+				Return other.CompareList(Self.list, line)
+		End Select
+	End Method
+	
+	Method CompareNumber:Int(number:Double, line:Int)
+		Select Self.type_
+			Case TYPE_NUMBER
+				If Self.number = number
+					Return 0
+				Else If Self.number < number
+					Return -1
+				Else If Self.number > number
+					Return 1
+				End If
+			Case TYPE_STRING
+				Local casted:Double = Double(Self.str)
+				If casted = number
+					Return 0
+				Else If casted < number
+					Return -1
+				Else If casted > number
+					Return 1
+				End If
+			Case TYPE_LIST
+				Error("Cannot compare list and number", line)
+		End Select
+	End Method
+	
+	Method CompareString:Int(str:String, line:Int)
+		Select Self.type_
+			Case TYPE_NUMBER
+				Local casted:Double = Double(str)
+				If Self.number = casted
+					Return 0
+				Else If Self.number < casted
+					Return -1
+				Else If Self.number > casted
+					Return 1
+				End If
+			Case TYPE_STRING
+				If Self.str = str
+					Return 0
+				Else If Self.str < str
+					Return -1
+				Else If Self.str > str
+					Return 1
+				End If
+			Case TYPE_LIST
+				Error("Cannot compare list and string", line)
+		End Select
+	End Method
+	
+	Method CompareList:Int(list:XSymbolList, line:Int)
+		Select Self.type_
+			Case TYPE_NUMBER
+				Error("Cannot compare number and list", line)
+			Case TYPE_STRING
+				Error("Cannot compare string and list", line)
+			Case TYPE_LIST
+				Error("Cannot compare lists", line)
+		End Select		
+	End Method
 End Type
 
 
@@ -315,9 +385,9 @@ Type XSymbolContext
 		While tok = "=" Or tok = "!="
 			Local otherExp:XSymbolValue = _ParseRelExp()
 			If tok = "="
-				ret = XSymbolValue.CreateNumber(Not (ret.number <> otherExp.number))
+				ret = XSymbolValue.CreateNumber(Not (ret.Compare_(otherExp, line) <> 0))
 			Else
-				ret = XSymbolValue.CreateNumber(ret.number <> otherExp.number)
+				ret = XSymbolValue.CreateNumber(ret.Compare_(otherExp, line) <> 0)
 			End If
 			tok = _GetToken()
 		Wend
@@ -336,18 +406,15 @@ Type XSymbolContext
 		'*[lesser | lequal | greater | gequal $addexp]
 		Local tok$ = _GetToken()
 		While tok = "<" Or tok = "<=" Or tok = ">" Or tok = ">="
-			If ret.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot compare non-numeric values", line)
-			
 			Local otherExp:XSymbolValue = _ParseAddExp()
-			If otherExp.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot compare non-numeric values", line)
 			If tok = "<"
-				ret = XSymbolValue.CreateNumber(ret.number < otherExp.number)
+				ret = XSymbolValue.CreateNumber(ret.Compare_(otherExp, line) < 0)
 			Else If tok = "<="
-				ret = XSymbolValue.CreateNumber(ret.number <= otherExp.number)
+				ret = XSymbolValue.CreateNumber(ret.Compare_(otherExp, line) <= 0)
 			Else If tok = ">"
-				ret = XSymbolValue.CreateNumber(ret.number > otherExp.number)
+				ret = XSymbolValue.CreateNumber(ret.Compare_(otherExp, line) > 0)
 			Else If tok = ">="
-				ret = XSymbolValue.CreateNumber(ret.number >= otherExp.number)
+				ret = XSymbolValue.CreateNumber(ret.Compare_(otherExp, line) >= 0)
 			End If
 			tok = _GetToken()
 		Wend
@@ -434,6 +501,57 @@ Type XSymbolContext
 		_GoBack()
 		
 		Return ret
+	End Method
+	
+	
+	'[not | minus] $groupexp
+	Method _ParseUnaryExp:XSymbolValue()
+		'not | minus
+		Local isNot:Int = False
+		Local isMinus:Int = False
+		Local tok$ = _GetToken()
+		If tok = "!"
+			isNot = True
+		Else If tok = "-"
+			isMinus = True
+		Else
+			_GoBack()
+		End If
+		
+		'$groupexp
+		Local ret:XSymbolValue = _ParseGroupExp()
+		If isNot
+			If ret.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot negate non-numeric value", line)
+			ret = XSymbolValue.CreateNumber(Not ret.number)
+		Else If isMinus
+			If ret.type_ <> XSymbolValue.TYPE_NUMBER Then Error("Cannot negate non-numeric value", line)
+			ret = XSymbolValue.CreateNumber(-ret.number)
+		End If
+		
+		Return ret
+	End Method
+	
+	
+	'(openbracket $expression closebracket) | $atomicexp
+	Method _ParseGroupExp:XSymbolValue()
+		Local tok$ = _GetToken()
+		If tok$ = "["
+			'[openbracket $expression closebracket]
+			Local ret:XSymbolValue = _ParseExpression()
+			tok = _GetToken()
+			If tok <> "]" Then Error("Expected ']'", line)
+			Return ret
+		Else
+			'$atomicexp
+			_GoBack()
+			Return _ParseAtomicExp()
+		End If
+	End Method
+	
+	
+	'number | text | $call
+	Method _ParseAtomicExp:XSymbolValue()
+		'...
 	End Method
 	
 	
@@ -697,7 +815,7 @@ Type XSymbolContext
 		End If
 		
 		'Symbol
-		If Instr("+*/%&|!=()", Chr(buffer[offset]))
+		If Instr("+*/%&|!=()[]", Chr(buffer[offset]))
 			Local str$ = Chr(buffer[offset])
 			offset :+ 1
 			Return str$

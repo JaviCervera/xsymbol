@@ -171,3 +171,5 @@ In order to learn the language syntax, you can run the file "test.sym". Other ex
 * [ ] Add dot access syntactic sugar for dictionaries.
 * [ ] Add @id expression for function pointer.
 * [ ] Add new library with support for map, reduce, filter, merge...
+* [ ] Or should return the first non false expression.
+* [ ] Compare lists.
