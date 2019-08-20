@@ -164,12 +164,12 @@ In order to learn the language syntax, you can run the file "test.sym". Other ex
 ## TODO v2.0
 
 * [ ] Parser with infix operators.
-* [ ] Use comma to separate values in list.
+* [ ] Use comma to separate values in lists and expressions.
 * [ ] Add :? operator to not require to close all chained else ifs.
-* [ ] Add constants (only local by now?).
+* [ ] Add local constants, assignable with :=.
 * [ ] Add dictionaries created with {"key": value} syntax.
 * [ ] Add dot access syntactic sugar for dictionaries.
-* [ ] Add @id expression for function pointer.
+* [ ] Function values, so they can be stored, passed and returned.
 * [ ] Add new library with support for map, reduce, filter, merge...
-* [ ] Or should return the first non false expression.
-* [ ] Compare lists.
+* [ ] "|" should return the first non false expression.
+* [ ] Operators should work on all types of data.

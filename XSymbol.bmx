@@ -551,7 +551,31 @@ Type XSymbolContext
 	
 	'number | text | $call
 	Method _ParseAtomicExp:XSymbolValue()
-		'...
+		Local tok$ = _GetToken()
+		If Len(tok$) > 0 And Instr("0123456789", Left$(tok$, 1))
+			'Number
+			Return XSymbolValue.CreateNumber(tok$.ToDouble())
+		Else If buffer[offset-1] = 34
+			'String
+			Return XSymbolValue.CreateString(tok$)
+		Else If _FindScriptFunction(tok)
+			Local arg:XSymbolValue = _ParseExpression()
+			Return _CallScriptFunction(tok, arg)
+		Else If _FindNativeFunction(tok)
+			Local arg:XSymbolValue = _ParseExpression()
+			Return _FindNativeFunction(tok).pointer(Self, arg)
+		Else If _IsParam(Lower$(tok))
+			If pname.length = 1
+				Return param
+			Else
+				Local list:XSymbolList = XSymbolList.Create()
+				list.Add(param)
+				list.Add(XSymbolValue.CreateNumber(_IsParam(Lower$(tok))))
+				Return XSymbolLibrary.Get(Self, XSymbolValue.CreateList(list))
+			End If
+		Else
+			Error("Unexpected token '" + tok + "'", line)
+		End If
 	End Method
 	
 	
@@ -734,7 +758,6 @@ Type XSymbolContext
 			
 		'Identifier
 		If _FindScriptFunction(tok)
-			If tok = "GeneraNodo" Then DebugStop
 			Local arg:XSymbolValue = _ParseExpression()
 			Return _CallScriptFunction(tok, arg)
 		Else If _FindNativeFunction(tok)
