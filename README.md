@@ -1,5 +1,7 @@
 # XSymbol
 
+*NOTE: XSymbol is not under active development. It was a student project that I did many years ago. Much later, I wrote another functional programming language called [Step](https://github.com/JaviCervera/step).*
+
 XSymbol is a purely symbolic functional programming language that I developed around 2007 while being a student of Software Engineering at the Technical University of Madrid. I was learning functional programming in Lisp and thought it would be nice to create my own functional language. It interpreted and dynamically typed, and the interpreter was written in [BlitzMax](https://github.com/blitz-research/blitzmax), a commercial programming language that was quite popular in the indie game development scene back then. Since it is now open source, installers for Windows, macOS and Linux have been added to the [v1.0 release](https://github.com/JaviCervera/xsymbol/releases/tag/v1.0).
 
 To build the interpreter, compile "XSymbolRun.bmx" using BlitzMax. The generated interpreter can then be used like this:
